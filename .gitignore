@@ -1,0 +1,15 @@
+# Obsidian
+vault/.obsidian/workspace.json
+vault/.obsidian/workspace-mobile.json
+vault/.obsidian/cache
+
+# Claude Code
+vault/.claude/projects/
+
+# opencode
+vault/.opencode/sessions/
+
+# OS
+.DS_Store
+Thumbs.db
+*.swp
