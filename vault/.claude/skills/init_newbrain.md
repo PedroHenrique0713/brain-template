@@ -1,200 +1,372 @@
-# /init_newbrain
+---
+name: init_newbrain
+description: Onboarding interativo de ~27 perguntas que personaliza o vault inteiro — gera CLAUDE.md, GEMINI.md, estrutura de pastas e memória inicial
+compatibility: Claude Code, Gemini CLI, opencode, modelos locais
+---
 
-Onboarding interativo para personalizar este vault. Faça as perguntas em blocos, espere as respostas, depois gere os arquivos.
+# init_newbrain
+
+Configura este vault para uma pessoa específica. Faz perguntas em blocos, depois gera os arquivos automaticamente.
 
 ---
 
-## Regras gerais
+## O que este skill faz
 
-- Faça um bloco por vez. Não despeje todas as perguntas de uma vez.
-- Após cada bloco, confirme o que entendeu antes de continuar.
-- No final, gere os arquivos automaticamente sem pedir confirmação extra.
-- Use o idioma que a pessoa responder nas perguntas.
-- Se a pessoa pular uma pergunta, use um placeholder sensato.
-
----
-
-## BLOCO 1 — Identidade (faça estas 5 perguntas juntas)
-
-> "Vamos começar com o básico. Responde as 5 perguntas abaixo:"
-
-1. Como devo te chamar? (nome ou apelido)
-2. O que você faz? (profissão, função, área de atuação)
-3. Qual o seu principal objetivo com este sistema? _(ex: organizar trabalho, aprender mais rápido, ter um segundo cérebro pessoal, tudo junto)_
-4. Em que idioma prefere que eu responda? (Português / English / Español / outro)
-5. Em uma escala de 1 a 5, quão confortável você é com tecnologia? _(1 = uso básico, 5 = developer/técnico)_
-
-Salve internamente: `name`, `profession`, `goal`, `language`, `tech_level`.
+1. Faz ~27 perguntas organizadas em 5 blocos
+2. Gera um `CLAUDE.md` e `GEMINI.md` personalizados na raiz do vault
+3. Cria pastas de projetos e áreas com base nas respostas
+4. Cria um arquivo de memória de perfil em `.claude/projects/*/memory/user_profile.md`
+5. Confirma tudo ao final
 
 ---
 
-## BLOCO 2 — Trabalho (faça estas 6 perguntas juntas)
+## Regras importantes (leia antes de começar)
 
-> "Agora sobre seu trabalho:"
-
-6. Você trabalha para uma empresa, é freelancer ou autônomo?
-7. Se empresa: qual o nome e o que ela faz em uma linha? Se freelancer: que tipo de projeto você costuma pegar?
-8. Qual é o seu papel principal no dia a dia?
-9. Quais ferramentas você usa todo dia? _(liste as 3-5 principais: ex: Notion, Slack, VS Code, Figma...)_
-10. Tem projetos ativos agora? Me dá até 3 nomes com uma linha de contexto cada.
-11. Tem rotinas recorrentes? _(reuniões fixas, entregas semanais, rituais de trabalho)_
-
-Salve internamente: `work_type`, `employer`, `role`, `tools[]`, `projects[]`, `routines[]`.
+- **Faça um bloco por vez.** Não despeje todas as perguntas de uma vez.
+- **Espere as respostas** antes de continuar para o próximo bloco.
+- **Confirme o que entendeu** após cada bloco com um breve resumo.
+- **Se a pessoa pular uma pergunta**, use um placeholder sensato (ex: "a definir").
+- **Use o idioma que a pessoa responder.** Se ela responder em português, continue em português.
+- **No final, gere os arquivos sem pedir confirmação extra** — só mostre o que foi criado.
 
 ---
 
-## BLOCO 3 — Vida pessoal (faça estas 5 perguntas juntas)
+## BLOCO 1 — Identidade
 
-> "Agora além do trabalho:"
+> Diga isso para a pessoa: *"Vamos começar. Responde estas 5 perguntas:"*
 
-12. Quais áreas da sua vida você quer acompanhar aqui? _(marque quantas quiser: saúde, finanças, estudos, relacionamentos, hobbies, espiritualidade, outros)_
-13. Você estuda ou faz cursos atualmente? O quê?
-14. Tem projetos pessoais fora do trabalho? Me dá até 2.
-15. Quer um espaço de diário/journaling aqui?
-16. Tem alguma coisa que você explicitamente **não** quer que eu traga à tona ou acompanhe?
+**Pergunta 1.** Como devo te chamar? (nome ou apelido)
+**Pergunta 2.** O que você faz? (profissão, função ou área de atuação — pode ser curto)
+**Pergunta 3.** Qual o seu principal objetivo com este sistema? Escolha o que mais se encaixa:
+  - (A) Organizar meu trabalho e projetos
+  - (B) Aprender e guardar conhecimento
+  - (C) Ter um diário / espaço pessoal
+  - (D) Tudo junto / outro
 
-Salve internamente: `life_areas[]`, `studying`, `personal_projects[]`, `wants_diary`, `off_limits`.
+**Pergunta 4.** Em que idioma prefere que eu responda? (Português / English / Español / outro)
 
----
+**Pergunta 5.** De 1 a 5, quão confortável você é com tecnologia?
+  - 1 = uso básico (WhatsApp, Google)
+  - 3 = uso bem o computador mas não programo
+  - 5 = developer / técnico
 
-## BLOCO 4 — Estilo de colaboração com IA (faça estas 7 perguntas juntas)
+> Após receber as respostas, confirme: *"Entendido — você é [nome], [profissão], objetivo: [objetivo]. Vamos continuar."*
 
-> "Agora vou entender como você prefere trabalhar comigo:"
-
-17. Prefere respostas curtas e diretas ou detalhadas e bem explicadas?
-18. Tom: formal, casual ou tanto faz?
-19. Quer que eu seja proativo (sugira coisas sem ser pedido) ou reativo (só quando você pedir)?
-20. No final de cada sessão, quer um resumo do que foi feito?
-21. Quer que eu lembre contexto pessoal entre sessões (memórias automáticas)?
-22. Prefere bullet lists ou texto corrido?
-23. Tem algum assunto sensível que prefere não discutir comigo?
-
-Salve internamente: `verbosity`, `tone`, `proactivity`, `session_summary`, `auto_memory`, `format_preference`, `sensitive_topics`.
+**Salve internamente:** `name`, `profession`, `goal`, `language`, `tech_level`
 
 ---
 
-## BLOCO 5 — Setup técnico (faça estas 4 perguntas juntas)
+## BLOCO 2 — Trabalho
 
-> "Últimas perguntas, sobre o setup:"
+> Diga: *"Agora sobre seu trabalho ou projetos:"*
 
-24. Qual(is) ferramenta(s) de IA vai usar com este vault? _(Claude Code / Gemini CLI / opencode / ainda não sei)_
-25. Usa VS Code como editor principal?
-26. Quais plugins do Obsidian você já usa ou quer usar? _(Dataview, Calendar, Templater, Tasks, nenhum, não sei...)_
-27. Com que frequência você abre o vault? _(diariamente / algumas vezes por semana / quando preciso)_
+**Pergunta 6.** Você trabalha para uma empresa, é freelancer ou as duas coisas?
 
-Salve internamente: `ai_tools[]`, `uses_vscode`, `obsidian_plugins[]`, `vault_frequency`.
+**Pergunta 7.** Se empresa: qual o nome e o que ela faz em uma linha?
+  Se freelancer: que tipo de trabalho você costuma fazer?
+  Se nenhum dos dois: pode pular.
+
+**Pergunta 8.** Qual é o seu papel principal no dia a dia? (ex: designer, gerente de projeto, estudante, dona de casa, etc.)
+
+**Pergunta 9.** Quais ferramentas ou apps você usa todo dia no trabalho? Liste até 5.
+  (ex: Notion, WhatsApp, Instagram, Canva, Google Sheets...)
+
+**Pergunta 10.** Tem projetos ativos agora que quer acompanhar aqui?
+  Se sim, me dá até **3 nomes** e uma frase de contexto para cada.
+  Se não, tudo bem — pode pular.
+
+**Pergunta 11.** Tem rotinas recorrentes? (ex: reunião toda segunda, relatório toda sexta, aula toda terça)
+  Se não tiver, pode pular.
+
+> Confirme: *"Certo, trabalho em [empresa/freelance], papel: [papel], projetos ativos: [lista]."*
+
+**Salve internamente:** `work_type`, `employer`, `role`, `tools[]`, `projects[]`, `routines[]`
+
+---
+
+## BLOCO 3 — Vida pessoal
+
+> Diga: *"Agora além do trabalho:"*
+
+**Pergunta 12.** Quais áreas da sua vida você quer acompanhar aqui? Pode marcar várias:
+  - Saúde e corpo
+  - Finanças pessoais
+  - Estudos e cursos
+  - Relacionamentos
+  - Hobbies
+  - Espiritualidade / bem-estar
+  - Nenhuma (só quero usar para trabalho)
+
+**Pergunta 13.** Você estuda ou faz algum curso atualmente? Se sim, o quê?
+
+**Pergunta 14.** Tem projetos pessoais fora do trabalho? (ex: blog, canal, hobby, empreendimento pessoal)
+  Me dá até 2 com uma linha de contexto.
+
+**Pergunta 15.** Quer ter um espaço de diário / journaling aqui? (Sim / Não / Talvez)
+
+**Pergunta 16.** Tem alguma coisa que você **não** quer que eu traga à tona ou acompanhe?
+  (ex: "não me lembre de finanças", "não quero falar sobre trabalho aos fins de semana")
+
+> Confirme: *"Anotado — áreas de vida: [lista], diário: [sim/não]."*
+
+**Salve internamente:** `life_areas[]`, `studying`, `personal_projects[]`, `wants_diary`, `off_limits`
+
+---
+
+## BLOCO 4 — Como prefere trabalhar comigo
+
+> Diga: *"Agora vou entender como você gosta de trabalhar com IA:"*
+
+**Pergunta 17.** Prefere respostas:
+  - (A) Curtas e diretas — só o essencial
+  - (B) Balanceadas — explico quando necessário
+  - (C) Detalhadas — gosto de entender o porquê de tudo
+
+**Pergunta 18.** Tom preferido:
+  - (A) Formal e profissional
+  - (B) Casual e amigável
+  - (C) Tanto faz
+
+**Pergunta 19.** Quero que eu seja:
+  - (A) Proativo — sugiro coisas mesmo sem você pedir
+  - (B) Reativo — só respondo quando você pedir
+  - (C) Equilibrado
+
+**Pergunta 20.** No final de cada sessão de trabalho, quer um resumo do que foi feito? (Sim / Não)
+
+**Pergunta 21.** Quer que eu lembre contexto pessoal entre conversas?
+  Por exemplo: se você me contar que está passando por algo difícil hoje, quero levar em conta da próxima vez. (Sim / Não)
+
+**Pergunta 22.** Tem algum assunto sensível que prefere não discutir comigo? (opcional — pode pular)
+
+> Confirme: *"Entendido — tom [tom], verbosidade [verbosidade], proatividade [proatividade]."*
+
+**Salve internamente:** `verbosity`, `tone`, `proactivity`, `session_summary`, `auto_memory`, `sensitive_topics`
+
+---
+
+## BLOCO 5 — Setup técnico
+
+> Diga: *"Últimas perguntas — sobre as ferramentas:"*
+
+**Pergunta 23.** Qual ferramenta de IA você vai usar com este vault?
+  - (A) Claude Code (Anthropic)
+  - (B) Gemini CLI (Google)
+  - (C) opencode ou outro modelo local
+  - (D) Não sei ainda / quero usar mais de uma
+
+**Pergunta 24.** Você usa VS Code como editor de código/texto?
+
+**Pergunta 25.** Quais plugins do Obsidian você já usa ou quer usar?
+  Os que já vêm instalados neste vault são: **Dataview, Templater, Calendar, Periodic Notes, Obsidian Git**.
+  Tem algum outro que você usa?
+
+**Pergunta 26.** Com que frequência você abre este vault?
+  - (A) Todo dia
+  - (B) Algumas vezes por semana
+  - (C) Quando preciso / sem rotina
+
+**Pergunta 27.** Mais alguma coisa que você quer que eu saiba sobre você ou sobre como você quer usar este sistema?
+
+> Confirme: *"Perfeito! Agora vou configurar tudo."*
+
+**Salve internamente:** `ai_tools[]`, `uses_vscode`, `extra_plugins`, `vault_frequency`, `extra_notes`
 
 ---
 
 ## GERAÇÃO DOS ARQUIVOS
 
-Após coletar todos os blocos, execute **todos** os passos abaixo:
+Após coletar todos os 5 blocos, execute os passos abaixo em ordem.
 
-### 1. Sobrescrever `CLAUDE.md`
+### Passo 1 — Sobrescrever `CLAUDE.md`
 
-Gere um novo `CLAUDE.md` na raiz do vault com este formato (adapte ao perfil coletado):
+Escreva um novo arquivo em `CLAUDE.md` na raiz do vault. Use o template abaixo, preenchendo com os dados coletados. Adapte o texto para soar natural — não copie os placeholders literalmente.
 
-```markdown
-# Brain — {name}
+```
+# Cérebro — {name}
 
 ## Quem sou
 
-{profession}. {employer_context}. {goal_context}.
+{profession}. {Se tiver employer: "Trabalho na/para {employer}."} {goal em forma de frase natural.}
 Nível técnico: {tech_level}/5.
 
 ---
 
 ## Projetos ativos
 
-{para cada projeto em projects[]:}
-| **{nome}** | {contexto} |
+{Se tiver projects[]:}
+| Projeto | Contexto |
+|---|---|
+{Para cada projeto: | **{nome}** | {contexto} |}
+
+{Se não tiver projetos: "_Nenhum cadastrado. Adicione projetos em `01 - PROJECTS/`._"}
 
 ---
 
 ## Áreas de vida
 
-{para cada área em life_areas[]:}
-- {área}
+{Se tiver life_areas[]:}
+{Para cada área: "- {área}"}
+
+{Se não tiver: "_Só uso profissional._"}
 
 ---
 
 ## Como trabalhar comigo
 
-- Idioma: {language}
-- Tom: {tone}
-- Verbosidade: {verbosity}
-- Formato preferido: {format_preference}
-- Proatividade: {proactivity}
-- Resumo de sessão: {session_summary}
-- Memória automática: {auto_memory}
-{se sensitive_topics: - Evitar: {sensitive_topics}}
+- **Idioma:** {language}
+- **Tom:** {tone}
+- **Verbosidade:** {verbosity}
+- **Proatividade:** {proactivity}
+- **Resumo de sessão:** {session_summary}
+- **Memória entre conversas:** {auto_memory}
+{Se tiver off_limits: "- **Evitar:** {off_limits}"}
+{Se tiver sensitive_topics: "- **Não discutir:** {sensitive_topics}"}
 
 ---
 
 ## Ferramentas do dia a dia
 
-{tools[]}
-
----
-
-## Plugins Obsidian
-
-{obsidian_plugins[]}
+{tools[] em formato de lista}
 
 ---
 
 ## Skills disponíveis
 
-| Skill | Uso |
+| Skill | O que faz |
 |---|---|
-| `/init_newbrain` | Refazer onboarding / atualizar perfil |
-| `/handover_chat` | Salvar progresso da sessão |
-| `/handon_chat` | Retomar tarefa ou listar sessões ativas |
+| `/init_newbrain` | Refazer o onboarding / atualizar este perfil |
+| `/handover_chat` | Salvar o progresso da sessão atual |
+| `/handon_chat` | Retomar uma sessão anterior |
 | `/vault_scan` | Varrer arquivos novos e criar referências cruzadas |
 
 ---
 
-## Guia de contexto
+## Guia de contexto (para a IA)
 
-Sempre que precisar de contexto, siga esta ordem:
-1. `CLAUDE.md` — identidade e projetos
+Ao iniciar uma sessão, leia na ordem:
+1. `CLAUDE.md` — este arquivo
 2. `.claude/projects/.../memory/MEMORY.md` — memórias persistidas
-3. `01 - PROJECTS/{projeto}.md` — detalhes de cada projeto
-4. `07 - HANDOVERS/` — última sessão
-5. `04 - DIARY/` — contexto do dia
+3. `01 - PROJECTS/{projeto}/` — detalhes de cada projeto ativo
+4. `07 - HANDOVERS/` — última sessão salva (mais recente primeiro)
+5. `04 - DIARY/` — contexto do dia atual
 ```
 
-### 2. Sobrescrever `GEMINI.md`
+### Passo 2 — Sobrescrever `GEMINI.md`
 
-Mesmo conteúdo do CLAUDE.md, substituindo referências a `.claude/` por `.gemini/` e removendo a seção de skills (Gemini CLI não tem slash commands nativos).
+Escreva um novo arquivo em `GEMINI.md` com o mesmo conteúdo do CLAUDE.md, mas:
+- Substitua referências a `.claude/` por `.gemini/`
+- Remova a seção "Skills disponíveis" (Gemini CLI não tem slash commands nativos)
+- Adicione ao final:
 
-### 3. Criar estrutura de pastas
+```
+## Nota para o Gemini CLI
 
-- Para cada projeto em `projects[]`: criar `01 - PROJECTS/{nome}/` com um `{nome}.md` de contexto inicial.
-- Para cada área em `life_areas[]`: criar `02 - AREAS/{área}/` com `.gitkeep`.
-- Se `wants_diary == true`: criar `04 - DIARY/template-diario.md` com template de journaling.
-- Se `studying != ""`: criar `06 - KNOWLEDGE/{curso ou tema}/` com nota inicial.
+Este vault não tem slash commands nativos. Para usar as skills:
+- Leia o arquivo `.claude/skills/{nome-da-skill}.md`
+- Siga as instruções descritas lá
 
-### 4. Criar memória inicial
+Skills disponíveis:
+- `.claude/skills/handover_chat.md` — salvar sessão
+- `.claude/skills/handon_chat.md` — retomar sessão
+- `.claude/skills/vault_scan.md` — varrer arquivos novos
+- `.claude/skills/init_newbrain.md` — refazer onboarding
+```
 
-Criar o arquivo de memória de perfil em `.claude/projects/{path_hash}/memory/` se possível, ou orientar o usuário a onde isso fica.
+### Passo 3 — Criar estrutura de pastas
 
-Crie um arquivo `user_profile.md` com:
+Execute os comandos abaixo conforme os dados coletados:
+
+**Para cada projeto em `projects[]`:**
+```bash
+mkdir -p "01 - PROJECTS/{nome-do-projeto}"
+```
+Depois crie `01 - PROJECTS/{nome-do-projeto}/{nome-do-projeto}.md` com o template de projeto (está em `03 - RESOURCES/Templates/projeto-template.md`). Preencha o "Contexto" com a frase que a pessoa deu.
+
+**Para cada área em `life_areas[]`:**
+```bash
+mkdir -p "02 - AREAS/{nome-da-area}"
+```
+
+**Se `wants_diary == true` ou `wants_diary == "Sim"`:**
+Copie o template `03 - RESOURCES/Templates/diario-template.md` para `04 - DIARY/diario-template.md`.
+
+**Se `studying != ""` e não estiver vazio:**
+```bash
+mkdir -p "06 - KNOWLEDGE/{tema-do-estudo}"
+```
+Crie `06 - KNOWLEDGE/{tema-do-estudo}/index.md` com uma nota inicial simples.
+
+**Se tiver projetos pessoais em `personal_projects[]`:**
+```bash
+mkdir -p "01 - PROJECTS/{nome-projeto-pessoal}"
+```
+
+### Passo 4 — Criar memória de perfil
+
+Tente criar o arquivo de memória em:
+`.claude/projects/{nome-hash-do-caminho}/memory/user_profile.md`
+
+Se não souber o path hash exato, crie em:
+`.claude/memory/user_profile.md`
+
+Conteúdo do arquivo:
+
 ```markdown
 ---
 name: user-profile
-description: Perfil do usuário — quem é, o que faz, como prefere colaborar
+description: Perfil do usuário — identidade, trabalho, estilo de colaboração
 metadata:
   type: user
 ---
 
-{name} — {profession} {employer_context}.
-Nível técnico: {tech_level}/5. Idioma: {language}.
-Tom preferido: {tone}. Verbosidade: {verbosity}.
-Proatividade: {proactivity}. Formato: {format_preference}.
+**Nome:** {name}
+**Profissão:** {profession}
+**Empresa/contexto:** {employer ou "independente"}
+**Objetivo principal:** {goal}
+**Nível técnico:** {tech_level}/5
+**Idioma preferido:** {language}
+
+**Estilo de colaboração:**
+- Tom: {tone}
+- Verbosidade: {verbosity}
+- Proatividade: {proactivity}
+- Resumo de sessão: {session_summary}
+- Memória automática: {auto_memory}
+
+**Ferramentas do dia a dia:** {tools[]}
+**Frequência de uso do vault:** {vault_frequency}
+
+{Se tiver off_limits: "**Evitar trazer à tona:** {off_limits}"}
+{Se tiver extra_notes: "**Notas adicionais:** {extra_notes}"}
 ```
 
-### 5. Confirmação final
+Também crie ou atualize o arquivo de índice `.claude/memory/MEMORY.md` com:
 
-Ao terminar, mostre um resumo do que foi criado/modificado e diga:
-> "Vault configurado. Pode começar a usar. Se quiser ajustar algo, rode `/init_newbrain` de novo ou edite o `CLAUDE.md` diretamente."
+```markdown
+# Memory Index
+
+- [Perfil do usuário](user_profile.md) — {name}, {profession}, estilo de colaboração
+```
+
+### Passo 5 — Mensagem final
+
+Após criar tudo, mostre este resumo:
+
+```
+Vault configurado para {name}.
+
+Arquivos gerados:
+✓ CLAUDE.md — perfil personalizado
+✓ GEMINI.md — equivalente para Gemini CLI
+✓ {n} pastas criadas em 01 - PROJECTS/
+✓ {n} pastas criadas em 02 - AREAS/
+✓ .claude/memory/user_profile.md — memória de perfil
+
+Próximos passos sugeridos:
+→ Abra o vault no Obsidian e explore as pastas
+→ Crie sua primeira nota em 04 - DIARY/ com /nova_nota ou abrindo o calendário
+→ Quando terminar uma sessão de trabalho, use /handover_chat para salvar o contexto
+
+Para atualizar seu perfil, rode /init_newbrain novamente.
+```

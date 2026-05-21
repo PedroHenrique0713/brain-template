@@ -1,0 +1,15 @@
+{
+  "useMarkdownLinks": false,
+  "newFileFolderPath": "",
+  "attachmentFolderPath": "03 - RESOURCES/Assets",
+  "alwaysUpdateLinks": true,
+  "newFileLocation": "current",
+  "spellcheck": false,
+  "strictLineBreaks": false,
+  "foldHeading": true,
+  "foldIndent": true,
+  "showLineNumber": false,
+  "readableLineLength": true,
+  "defaultViewMode": "source",
+  "livePreview": true
+}

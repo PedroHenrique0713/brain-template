@@ -1,0 +1,23 @@
+{
+  "daily": {
+    "enabled": true,
+    "format": "YYYY-MM-DD",
+    "folder": "04 - DIARY",
+    "template": "03 - RESOURCES/Templates/diario-template.md"
+  },
+  "weekly": {
+    "enabled": false,
+    "format": "YYYY-[W]WW",
+    "folder": "04 - DIARY/Semanais",
+    "template": ""
+  },
+  "monthly": {
+    "enabled": false
+  },
+  "quarterly": {
+    "enabled": false
+  },
+  "yearly": {
+    "enabled": false
+  }
+}
