@@ -1,0 +1,22 @@
+{
+  "enableInlineDataview": true,
+  "enableDataviewJs": false,
+  "enableInlineDataviewJs": false,
+  "prettyRenderInlineFields": true,
+  "renderNullAs": "-",
+  "warnOnEmptyResult": true,
+  "refreshInterval": 2500,
+  "defaultDateFormat": "dd/MM/yyyy",
+  "defaultDateTimeFormat": "dd/MM/yyyy HH:mm",
+  "maxRecursiveRenderDepth": 4,
+  "tableIdColumnName": "Arquivo",
+  "tableGroupColumnName": "Grupo",
+  "showResultCount": true,
+  "allowHtml": true,
+  "inlineQueryPrefix": "=",
+  "inlineJsQueryPrefix": "$=",
+  "inlineQueriesInCodeblocks": true,
+  "enablePropertyReadAccess": true,
+  "taskCompletionTracking": true,
+  "taskCompletionText": "completion"
+}

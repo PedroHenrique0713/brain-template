@@ -1,22 +1,74 @@
 #!/usr/bin/env bash
+# brain-template setup — instala plugins Obsidian e configura ferramentas de IA
 set -e
 
-VAULT_DIR="$(cd "$(dirname "$0")/vault" && pwd)"
+SCRIPT_DIR="$(cd "$(dirname "$0")" && pwd)"
+VAULT_DIR="$SCRIPT_DIR/vault"
+PLUGINS_DIR="$VAULT_DIR/.obsidian/plugins"
+
+# ──── Cores ─────────────────────────────────────────────────────────────────────
+GREEN='\033[0;32m'; YELLOW='\033[1;33m'; RED='\033[0;31m'; NC='\033[0m'
+ok()   { echo -e "${GREEN}  ✓${NC} $1"; }
+warn() { echo -e "${YELLOW}  !${NC} $1"; }
+info() { echo -e "  → $1"; }
 
 echo ""
-echo "╔══════════════════════════════════════╗"
-echo "║       brain-template — setup         ║"
-echo "╚══════════════════════════════════════╝"
-echo ""
-echo "Vault encontrado em: $VAULT_DIR"
+echo "╔══════════════════════════════════════════╗"
+echo "║          brain-template — setup          ║"
+echo "╚══════════════════════════════════════════╝"
 echo ""
 
-# ──── Detectar ferramenta de IA ────────────────────────────────────────────────
+# ──── Verificar dependências básicas ────────────────────────────────────────────
+need_curl=false
+command -v curl &>/dev/null || need_curl=true
 
-echo "Qual(is) ferramenta(s) de IA você vai usar?"
-echo "  1) Claude Code"
-echo "  2) Gemini CLI"
-echo "  3) opencode"
+if $need_curl; then
+  echo -e "${RED}  ✗${NC} curl não encontrado. Instale com:"
+  echo "    Linux: sudo apt install curl"
+  echo "    Mac:   brew install curl"
+  exit 1
+fi
+
+# ──── Download de plugin Obsidian ────────────────────────────────────────────────
+download_plugin() {
+  local repo="$1"        # ex: blacksmithgu/obsidian-dataview
+  local plugin_id="$2"   # ex: dataview
+  local dir="$PLUGINS_DIR/$plugin_id"
+
+  mkdir -p "$dir"
+
+  local base_url="https://github.com/$repo/releases/latest/download"
+
+  echo -n "    Baixando $plugin_id... "
+
+  if curl -sf "$base_url/main.js" -o "$dir/main.js" 2>/dev/null; then
+    curl -sf "$base_url/manifest.json" -o "$dir/manifest.json" 2>/dev/null || true
+    curl -sf "$base_url/styles.css" -o "$dir/styles.css" 2>/dev/null || true
+    echo -e "${GREEN}ok${NC}"
+  else
+    echo -e "${YELLOW}falhou (sem conexão ou release não encontrada)${NC}"
+    warn "Plugin '$plugin_id' precisará ser instalado manualmente no Obsidian."
+  fi
+}
+
+# ──── Instalar plugins Obsidian ──────────────────────────────────────────────────
+echo "Instalando plugins Obsidian..."
+echo ""
+download_plugin "blacksmithgu/obsidian-dataview"        "dataview"
+download_plugin "SilentVoid13/Templater"                 "templater-obsidian"
+download_plugin "liamcain/obsidian-calendar-plugin"      "obsidian-calendar-plugin"
+download_plugin "liamcain/obsidian-periodic-notes"       "periodic-notes"
+download_plugin "Vinzent03/obsidian-git"                 "obsidian-git"
+
+echo ""
+ok "Plugins instalados em: $PLUGINS_DIR"
+echo ""
+
+# ──── Ferramenta de IA ───────────────────────────────────────────────────────────
+echo "Qual ferramenta de IA você vai usar?"
+echo "  1) Claude Code  (Anthropic)"
+echo "  2) Gemini CLI   (Google)"
+echo "  3) opencode     (open-source, múltiplos modelos)"
 echo "  4) Todas / não sei ainda"
 echo ""
 read -rp "Opção (1-4): " ai_choice
@@ -29,91 +81,82 @@ case $ai_choice in
   1) setup_claude=true ;;
   2) setup_gemini=true ;;
   3) setup_opencode=true ;;
-  4) setup_claude=true; setup_gemini=true; setup_opencode=true ;;
-  *) echo "Opção inválida. Configurando tudo por padrão."; setup_claude=true; setup_gemini=true ;;
+  *) setup_claude=true; setup_gemini=true; setup_opencode=true ;;
 esac
 
-# ──── Claude Code ───────────────────────────────────────────────────────────────
+echo ""
 
+# ──── Claude Code ────────────────────────────────────────────────────────────────
 if $setup_claude; then
-  echo ""
-  echo "▶ Configurando Claude Code..."
-
+  echo "Verificando Claude Code..."
   if command -v claude &>/dev/null; then
-    echo "  ✓ Claude Code já instalado ($(claude --version 2>/dev/null || echo 'versão desconhecida'))"
+    ok "Claude Code já instalado"
   else
-    echo "  ✗ Claude Code não encontrado."
-    echo "    Instale com: npm install -g @anthropic-ai/claude-code"
-    echo "    Ou acesse: https://claude.ai/code"
+    warn "Claude Code não encontrado."
+    info "Instale em: https://claude.ai/code"
+    info "Ou: npm install -g @anthropic-ai/claude-code"
   fi
-
-  echo "  ✓ Skills disponíveis em: $VAULT_DIR/.claude/skills/"
-  echo "    → /init_newbrain  /handover_chat  /handon_chat  /vault_scan"
+  ok "Skills em: $VAULT_DIR/.claude/skills/"
+  info "/init_newbrain  /handover_chat  /handon_chat  /vault_scan"
+  echo ""
 fi
 
-# ──── Gemini CLI ────────────────────────────────────────────────────────────────
-
+# ──── Gemini CLI ─────────────────────────────────────────────────────────────────
 if $setup_gemini; then
-  echo ""
-  echo "▶ Configurando Gemini CLI..."
-
+  echo "Verificando Gemini CLI..."
   if command -v gemini &>/dev/null; then
-    echo "  ✓ Gemini CLI já instalado"
+    ok "Gemini CLI já instalado"
   else
-    echo "  ✗ Gemini CLI não encontrado."
-    echo "    Instale com: npm install -g @google/generative-ai-cli"
-    echo "    Ou acesse: https://ai.google.dev/gemini-api/docs/gemini-cli"
+    warn "Gemini CLI não encontrado."
+    info "Instale em: https://ai.google.dev/gemini-api/docs/gemini-cli"
+    info "Ou: npm install -g @google/generative-ai-cli"
   fi
-
-  # Gemini CLI usa GEMINI.md na raiz do projeto
-  if [ -f "$VAULT_DIR/GEMINI.md" ]; then
-    echo "  ✓ GEMINI.md encontrado — contexto pronto"
-  fi
-
-  echo "  ℹ Gemini CLI não tem slash commands nativos."
-  echo "    As skills ficam em .claude/skills/ e podem ser coladas como contexto."
+  ok "GEMINI.md configurado em: $VAULT_DIR/GEMINI.md"
+  info "Gemini CLI não tem slash commands — use as skills como contexto manual"
+  echo ""
 fi
 
-# ──── opencode ──────────────────────────────────────────────────────────────────
-
+# ──── opencode ───────────────────────────────────────────────────────────────────
 if $setup_opencode; then
-  echo ""
-  echo "▶ Configurando opencode..."
-
+  echo "Verificando opencode..."
   if command -v opencode &>/dev/null; then
-    echo "  ✓ opencode já instalado"
+    ok "opencode já instalado"
   else
-    echo "  ✗ opencode não encontrado."
-    echo "    Instale com: npm install -g opencode-ai"
-    echo "    Ou acesse: https://opencode.ai"
+    warn "opencode não encontrado."
+    info "Instale em: https://opencode.ai"
+    info "Ou: npm install -g opencode-ai"
   fi
 
   OPENCODE_DIR="$VAULT_DIR/.opencode"
-  if [ ! -d "$OPENCODE_DIR" ]; then
+  if [ ! -f "$OPENCODE_DIR/config.toml" ]; then
     mkdir -p "$OPENCODE_DIR"
     cat > "$OPENCODE_DIR/config.toml" <<'EOF'
+# opencode config — brain-template
+# Configure o modelo e provedor desejados abaixo
+# Exemplos:
+#   provider = "anthropic"  model = "claude-sonnet-4-6"
+#   provider = "google"     model = "gemini-2.0-flash"
+#   provider = "openai"     model = "gpt-4o"
+#   provider = "ollama"     model = "llama3.2"
+
 [model]
-# Configure o modelo desejado aqui
-# Ex: provider = "anthropic", model = "claude-sonnet-4-6"
-# Ex: provider = "google", model = "gemini-2.0-flash"
+# provider = "anthropic"
+# model = "claude-sonnet-4-6"
 
 [instructions]
-# Aponta para o CLAUDE.md como system prompt
 file = "../CLAUDE.md"
 EOF
-    echo "  ✓ .opencode/config.toml criado"
+    ok ".opencode/config.toml criado"
   fi
+  echo ""
 fi
 
-# ──── VS Code ───────────────────────────────────────────────────────────────────
-
-echo ""
+# ──── VS Code ────────────────────────────────────────────────────────────────────
 read -rp "Usa VS Code? (s/n): " uses_vscode
-
 if [[ "$uses_vscode" =~ ^[Ss]$ ]]; then
   VSCODE_DIR="$VAULT_DIR/.vscode"
-  if [ ! -d "$VSCODE_DIR" ]; then
-    mkdir -p "$VSCODE_DIR"
+  mkdir -p "$VSCODE_DIR"
+  if [ ! -f "$VSCODE_DIR/extensions.json" ]; then
     cat > "$VSCODE_DIR/extensions.json" <<'EOF'
 {
   "recommendations": [
@@ -121,34 +164,40 @@ if [[ "$uses_vscode" =~ ^[Ss]$ ]]; then
   ]
 }
 EOF
-    echo "  ✓ .vscode/extensions.json criado com recomendação do Claude Code"
+    ok ".vscode/extensions.json criado (recomenda Claude Code)"
   fi
+  echo ""
 fi
 
-# ──── Obsidian ──────────────────────────────────────────────────────────────────
-
+# ──── Obsidian ───────────────────────────────────────────────────────────────────
+echo "╔══════════════════════════════════════════╗"
+echo "║           Tudo pronto!                   ║"
+echo "╚══════════════════════════════════════════╝"
 echo ""
-echo "▶ Vault Obsidian pronto em: $VAULT_DIR"
-echo "  Abra o Obsidian → 'Abrir pasta como vault' → selecione a pasta acima."
+echo "  Vault em: $VAULT_DIR"
 echo ""
-
-# ──── Próximos passos ───────────────────────────────────────────────────────────
-
-echo "╔══════════════════════════════════════╗"
-echo "║           Próximos passos            ║"
-echo "╚══════════════════════════════════════╝"
+echo "  PRÓXIMOS PASSOS:"
 echo ""
-echo "  1. Abra o vault no Obsidian"
-echo "  2. Abra a pasta vault/ no VS Code (ou terminal)"
+echo "  1. Abra o Obsidian"
+echo "     → Clique em 'Abrir pasta como vault'"
+echo "     → Selecione a pasta: vault/"
+echo "     → Quando perguntar sobre plugins: clique em 'Confiar no autor'"
+echo ""
 
 if $setup_claude; then
-  echo "  3. Rode: claude (no terminal dentro do vault)"
-  echo "  4. Digite: /init_newbrain"
+  echo "  2. Abra a pasta vault/ no VS Code (ou terminal)"
+  echo "     → No terminal dentro da pasta vault/: claude"
+  echo "     → Digite: /init_newbrain"
+  echo "     → Responda as perguntas — o vault vai se configurar automaticamente"
 elif $setup_gemini; then
-  echo "  3. Rode: gemini (no terminal dentro do vault)"
-  echo "  4. Peça para seguir as instruções de onboarding em .claude/skills/init_newbrain.md"
+  echo "  2. Abra a pasta vault/ no terminal"
+  echo "     → Digite: gemini"
+  echo "     → Peça: 'Leia o arquivo .claude/skills/init_newbrain.md e siga as instruções'"
 fi
 
 echo ""
-echo "  Pronto! O onboarding vai personalizar tudo pra você."
+echo "  3. Use o vault!"
+echo "     → /handover_chat — salvar sessão"
+echo "     → /handon_chat   — retomar sessão"
+echo "     → /vault_scan    — conectar notas"
 echo ""

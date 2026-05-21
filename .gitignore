@@ -1,15 +1,25 @@
-# Obsidian
+# ──── Plugins Obsidian (binários — baixados pelo setup.sh) ─────────────────────
+vault/.obsidian/plugins/*/main.js
+vault/.obsidian/plugins/*/styles.css
+
+# ──── Obsidian workspace (específico de cada máquina) ──────────────────────────
 vault/.obsidian/workspace.json
 vault/.obsidian/workspace-mobile.json
 vault/.obsidian/cache
+vault/.obsidian/.trash/
 
-# Claude Code
+# ──── Claude Code (sessões e projetos locais) ───────────────────────────────────
 vault/.claude/projects/
+vault/.claude/todos/
 
-# opencode
+# ──── opencode (sessões) ────────────────────────────────────────────────────────
 vault/.opencode/sessions/
 
-# OS
+# ──── VS Code ────────────────────────────────────────────────────────────────────
+vault/.vscode/settings.json
+
+# ──── OS ─────────────────────────────────────────────────────────────────────────
 .DS_Store
 Thumbs.db
 *.swp
+*.swo
