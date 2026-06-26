@@ -15,6 +15,41 @@ vault/.claude/todos/
 # ──── opencode (sessões) ────────────────────────────────────────────────────────
 vault/.opencode/sessions/
 
+# ──── Segredos e configuração local ─────────────────────────────────────────────
+.env
+.env.*
+!.env.example
+*.local
+*.local.*
+*secret*
+*secrets*
+*credential*
+*credentials*
+*token*
+*.pem
+*.key
+*.p12
+*.pfx
+id_rsa
+id_rsa.pub
+id_ed25519
+id_ed25519.pub
+vault/**/.env
+vault/**/.env.*
+vault/**/*secret*
+vault/**/*credential*
+vault/**/*token*
+vault/**/*.pem
+vault/**/*.key
+
+# ──── Dumps / backups locais ───────────────────────────────────────────────────
+*.bak
+*.backup
+*.dump
+*.sql
+*.sqlite
+*.sqlite3
+
 # ──── VS Code ────────────────────────────────────────────────────────────────────
 vault/.vscode/settings.json
 
