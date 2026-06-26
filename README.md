@@ -1,134 +1,245 @@
-# brain-template
+# Vault Brain
 
-Vault Obsidian pronto para uso com IA. Funciona com **Claude Code**, **Gemini CLI**, **opencode** e modelos locais.
+Template de vault Obsidian para usar IA com contexto persistente, memória versionada e continuidade entre ferramentas como Claude Code, Gemini CLI, opencode, ChatGPT e modelos locais.
 
-Depois de instalar, rode `/init_newbrain` — ele faz ~27 perguntas e configura tudo: perfil, pastas, CLAUDE.md e memória inicial.
-
----
+A ideia é simples: o conhecimento importante fica em arquivos Markdown dentro do vault. A IA lê o contexto certo no começo, escreve decisões duráveis em `Memória/`, salva estado de trabalho em `07 - HANDOVERS/` e consegue retomar depois sem depender do histórico do chat.
 
 ## Instalação
 
-### 1. Pré-requisitos
+Pré-requisitos:
 
-- [Obsidian](https://obsidian.md/download) — baixe e instale
-- Git — verifique se já tem: abra o terminal e digite `git --version`
-  - Linux: `sudo apt install git`
-  - Mac: já vem instalado (ou instale com `xcode-select --install`)
-  - Windows: baixe em [git-scm.com](https://git-scm.com/download/win)
+- Obsidian
+- Git
+- Uma ferramenta de IA, como Claude Code, Gemini CLI ou opencode
 
-### 2. Clonar e instalar
-
-Abra o terminal e cole este comando:
+Clone e rode o setup:
 
 ```bash
-git clone https://github.com/PedroHenrique0713/brain-template && cd brain-template && bash setup.sh
+git clone https://github.com/PedroHenrique0713/brain-template
+cd brain-template
+bash setup.sh
 ```
 
-O script vai:
-- Baixar os plugins do Obsidian automaticamente
-- Perguntar qual ferramenta de IA você vai usar
-- Verificar se as ferramentas estão instaladas
-- Mostrar os próximos passos
+Depois abra `brain-template/vault/` no Obsidian como vault.
 
-### 3. Abrir no Obsidian
+## Onboarding
 
-1. Abra o Obsidian
-2. Clique em **"Abrir pasta como vault"**
-3. Selecione a pasta `brain-template/vault/`
-4. Quando perguntar sobre plugins: clique em **"Confiar no autor e habilitar plugins"**
+O primeiro passo real é rodar `/init_newbrain`. Ele personaliza o vault para você:
 
-### 4. Rodar o onboarding
+- cria ou atualiza `AGENTS.md`;
+- mantém `CLAUDE.md` e `GEMINI.md` como ponte fina;
+- cria `Memória/user-profile.md`;
+- atualiza `Memória/INDEX.md`;
+- cria pastas iniciais de projetos, áreas e estudos;
+- registra seu estilo de colaboração com IA.
 
 Com Claude Code:
+
 ```bash
 cd brain-template/vault
 claude
 ```
-Depois: `/init_newbrain`
 
-Com Gemini CLI:
+Depois rode:
+
+```text
+/init_newbrain
+```
+
+Com Gemini CLI ou outro modelo sem slash commands, peça:
+
+```text
+Leia AGENTS.md e .claude/commands/init_newbrain.md, depois siga o onboarding.
+```
+
+## Arquitetura
+
+```mermaid
+flowchart TD
+  User["Usuário"] --> AI["IA: Claude, Gemini, opencode, ChatGPT"]
+  AI --> Agents["AGENTS.md"]
+  AI --> MemoryIndex["Memória/INDEX.md"]
+  AI --> Handover["07 - HANDOVERS/"]
+  Agents --> Projects["01 - PROJECTS/"]
+  Agents --> Areas["02 - AREAS/"]
+  MemoryIndex --> Facts["Memória/*.md"]
+  Handover --> Tasks["07 - HANDOVERS/Tarefas/T0XX"]
+```
+
+### Canônico
+
+Estes arquivos são fonte de verdade:
+
+| Arquivo/pasta | Papel |
+|---|---|
+| `AGENTS.md` | Contexto principal do vault para qualquer IA |
+| `Memória/INDEX.md` | Índice dos fatos duráveis |
+| `Memória/*.md` | Memória semântica, um fato por arquivo |
+| `07 - HANDOVERS/` | Estado episódico de sessões e tarefas |
+| `01 - PROJECTS/`, `02 - AREAS/`, `06 - KNOWLEDGE/` | Referência de projetos, áreas e conhecimento |
+
+### Não canônico
+
+Estes arquivos não devem duplicar contexto:
+
+| Arquivo/pasta | Papel |
+|---|---|
+| `CLAUDE.md` | Só aponta para `AGENTS.md` |
+| `GEMINI.md` | Só aponta para `AGENTS.md` |
+| `.claude/commands/` | Procedimentos reutilizáveis, não memória |
+| `.opencode/config.toml` | Configuração de ferramenta |
+
+`CLAUDE.md` e `GEMINI.md` existem porque algumas ferramentas carregam esses nomes automaticamente. O conteúdo de verdade fica em `AGENTS.md`.
+
+## Memória
+
+Existem dois tipos principais de continuidade:
+
+```mermaid
+flowchart LR
+  Stable["Fato durável"] --> Memory["Memória/*.md"]
+  Memory --> Index["Memória/INDEX.md"]
+
+  Session["Estado de sessão"] --> Handover["07 - HANDOVERS/*.md"]
+  LongTask["Tarefa longa"] --> Task["07 - HANDOVERS/Tarefas/T0XX.md"]
+```
+
+Use `Memória/` para fatos que continuam verdadeiros daqui a meses:
+
+- preferências de trabalho;
+- decisões técnicas;
+- contexto estável de projeto;
+- regras de colaboração;
+- causas-raiz importantes.
+
+Não use `Memória/` para:
+
+- pendências momentâneas;
+- “atualmente”;
+- conteúdo que já está registrado no git;
+- resumo de uma sessão específica.
+
+Um fato deve seguir este padrão:
+
+```markdown
+---
+name: slug-do-fato
+description: resumo curto
+type: project | feedback | user | reference
+scope: global
+updated: YYYY-MM-DD
+---
+
+Texto do fato.
+
+**Why:** por que isso importa.
+**How to apply:** como a IA deve usar esse fato.
+```
+
+Depois adicione uma linha em `Memória/INDEX.md`:
+
+```markdown
+- [Título](slug-do-fato.md) — `scope` — gancho curto
+```
+
+## Handover e Handon
+
+Handover é memória episódica: onde uma sessão parou.
+
+Use `/handover_chat` quando terminar uma sessão, trocar de IA ou pausar uma tarefa. Ele salva:
+
+- objetivo atual;
+- estado exato;
+- o que já foi feito;
+- próximos passos;
+- decisões técnicas;
+- armadilhas de contexto.
+
+Use `/handon_chat` para retomar:
+
+- listar handovers ativos;
+- abrir o mais recente;
+- abrir uma tarefa específica (`T001`, `T002`, etc.).
+
+```mermaid
+sequenceDiagram
+  participant A as IA 1
+  participant V as Vault
+  participant B as IA 2
+
+  A->>V: /handover_chat
+  V->>V: salva 07 - HANDOVERS/Tarefas/T0XX.md
+  B->>V: /handon_chat T0XX
+  V-->>B: objetivo, estado, feito, próximos passos
+  B->>V: continua e atualiza handover
+```
+
+Regra prática:
+
+- `Memória/` responde “o que saber”.
+- `07 - HANDOVERS/` responde “onde parei”.
+
+## Commands
+
+Os procedimentos ficam em `.claude/commands/`. Eles são Markdown puro, então funcionam como slash commands no Claude Code ou como instruções copiadas para outras IAs.
+
+| Command | Uso |
+|---|---|
+| `/init_newbrain` | Onboarding e personalização inicial |
+| `/handover_chat` | Salvar estado da sessão |
+| `/handon_chat` | Retomar sessão ou tarefa |
+| `/vault_scan` | Criar referências cruzadas entre notas |
+| `/vault_gc` | Manutenção: arquivar handovers, validar memória e triagem do INBOX |
+
+## Estrutura
+
+```text
+vault/
+├── 00 - INBOX/
+├── 01 - PROJECTS/
+├── 02 - AREAS/
+├── 03 - RESOURCES/
+│   └── Templates/
+├── 04 - DIARY/
+├── 05 - MEETINGS/
+├── 06 - KNOWLEDGE/
+├── 07 - HANDOVERS/
+│   ├── Tarefas/
+│   └── Arquivo/
+├── Memória/
+│   └── INDEX.md
+├── AGENTS.md
+├── CLAUDE.md
+└── GEMINI.md
+```
+
+## Fluxo recomendado
+
+```mermaid
+flowchart TD
+  Install["Instalar template"] --> Open["Abrir vault no Obsidian"]
+  Open --> Init["/init_newbrain"]
+  Init --> Work["Trabalhar com IA"]
+  Work --> Durable{"Aprendeu fato durável?"}
+  Durable -- "Sim" --> Memory["Criar/atualizar Memória"]
+  Durable -- "Não" --> ContinueWork["Continuar"]
+  Work --> Pause{"Vai pausar/trocar IA?"}
+  Pause -- "Sim" --> Save["/handover_chat"]
+  Save --> Resume["/handon_chat"]
+  Pause -- "Não" --> ContinueWork
+```
+
+## Backup
+
+O vault é só uma pasta Markdown. Para versionar:
+
 ```bash
 cd brain-template/vault
-gemini
-```
-Depois: *"Leia o arquivo .claude/skills/init_newbrain.md e siga as instruções"*
-
----
-
-## O que está incluído
-
-### Plugins Obsidian (instalados automaticamente)
-
-| Plugin | O que faz |
-|---|---|
-| **Dataview** | Transforma suas notas em banco de dados — crie listas e tabelas dinâmicas |
-| **Templater** | Templates com variáveis — cria notas de projetos, reuniões e diário com um clique |
-| **Calendar** | Calendário visual na barra lateral — clique em qualquer dia para abrir/criar o diário |
-| **Periodic Notes** | Integra o calendário com seus diários diários e semanais |
-| **Obsidian Git** | Backup automático do vault para o GitHub — nunca perca uma nota |
-
-### Skills de IA
-
-| Skill | O que faz |
-|---|---|
-| `/init_newbrain` | Onboarding completo — faz ~27 perguntas e personaliza o vault para você |
-| `/handover_chat` | Salva o progresso da sessão atual para retomar depois |
-| `/handon_chat` | Lista sessões salvas ou retoma uma sessão específica |
-| `/vault_scan` | Varre notas novas e cria links entre notas relacionadas automaticamente |
-
-### Estrutura de pastas
-
-```
-vault/
-├── 01 - PROJECTS/     ← projetos com objetivo e prazo definidos
-├── 02 - AREAS/        ← áreas de vida (saúde, finanças, estudos...)
-├── 03 - RESOURCES/    ← templates e materiais de apoio
-│   └── Templates/     ← diário, projeto (usados pelo Templater)
-├── 04 - DIARY/        ← diário pessoal / journaling
-├── 05 - MEETINGS/     ← resumos de reuniões e calls
-├── 06 - KNOWLEDGE/    ← cursos, leituras, anotações de estudo
-├── 07 - HANDOVERS/    ← snapshots de sessões IA (para continuidade)
-├── CLAUDE.md          ← contexto para Claude Code (gerado pelo /init_newbrain)
-└── GEMINI.md          ← contexto para Gemini CLI
+git init
+git remote add origin https://github.com/SEU_USUARIO/meu-vault.git
+git add .
+git commit -m "primeiro backup"
+git push -u origin main
 ```
 
----
-
-## Compatibilidade
-
-| Ferramenta | Skills | Contexto automático |
-|---|---|---|
-| **Claude Code** | `/init_newbrain` e mais via slash command | `CLAUDE.md` carregado automaticamente |
-| **Gemini CLI** | Via prompt manual (sem slash commands) | `GEMINI.md` carregado automaticamente |
-| **opencode** | Via `.opencode/config.toml` | `CLAUDE.md` como system prompt |
-| **Modelos locais** | Skills são texto puro — funciona com qualquer modelo | Cole o CLAUDE.md como contexto |
-
----
-
-## Como fazer backup do vault com o Obsidian Git
-
-1. Crie um repositório **privado** no GitHub para seu vault pessoal
-2. No terminal, dentro da pasta `vault/`:
-   ```bash
-   git init
-   git remote add origin https://github.com/SEU_USUARIO/meu-vault.git
-   git add . && git commit -m "primeiro backup"
-   git push -u origin main
-   ```
-3. No Obsidian: **Settings → Obsidian Git** → configure o intervalo de backup automático
-
----
-
-## Dúvidas frequentes
-
-**Preciso saber programar para usar isso?**
-Não. O único comando técnico é o da instalação. Depois, tudo é feito pelo Obsidian e pela IA.
-
-**Funciona no celular?**
-O vault Obsidian funciona no celular via Obsidian Mobile. As skills de IA requerem o app no computador.
-
-**Posso usar com ChatGPT ou outro modelo?**
-Sim. Cole o conteúdo do `CLAUDE.md` como system prompt em qualquer modelo. As skills também são texto puro — cole o conteúdo da skill desejada como instrução.
-
-**Como atualizo meu perfil depois do onboarding?**
-Rode `/init_newbrain` de novo ou edite o `CLAUDE.md` diretamente.
+Use repositório privado se o vault tiver dados pessoais.

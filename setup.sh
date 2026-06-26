@@ -5,17 +5,76 @@ set -e
 SCRIPT_DIR="$(cd "$(dirname "$0")" && pwd)"
 VAULT_DIR="$SCRIPT_DIR/vault"
 PLUGINS_DIR="$VAULT_DIR/.obsidian/plugins"
+ART_FILE="$SCRIPT_DIR/ascii-art.txt"
+PREVIEW=false
 
-# ──── Cores ─────────────────────────────────────────────────────────────────────
-GREEN='\033[0;32m'; YELLOW='\033[1;33m'; RED='\033[0;31m'; NC='\033[0m'
-ok()   { echo -e "${GREEN}  ✓${NC} $1"; }
-warn() { echo -e "${YELLOW}  !${NC} $1"; }
-info() { echo -e "  → $1"; }
+case "${1:-}" in
+  --preview|preview)
+    PREVIEW=true
+    ;;
+  -h|--help)
+    echo "Uso: bash setup.sh [--preview]"
+    echo "  --preview  mostra o banner e a abertura do setup sem instalar nada"
+    exit 0
+    ;;
+esac
+
+# ──── Saída ─────────────────────────────────────────────────────────────────────
+GREEN=''; YELLOW=''; RED=''; CYAN=''; BOLD=''; DIM=''; NC=''
+ok()   { echo "  ✓ $1"; }
+warn() { echo "  ! $1"; }
+info() { echo "  → $1"; }
+
+print_banner() {
+  echo ""
+  if [ -f "$ART_FILE" ]; then
+    cat "$ART_FILE"
+  else
+    echo "Vault Brain"
+  fi
+  echo "  brain-template setup · AGENTS.md + Memória + HANDOVERS"
+  echo ""
+}
 
 echo ""
-echo "╔══════════════════════════════════════════╗"
-echo "║          brain-template — setup          ║"
-echo "╚══════════════════════════════════════════╝"
+print_banner
+
+if $PREVIEW; then
+  echo "Preview do setup:"
+  ok "Banner carregado de: $ART_FILE"
+  info "No modo normal, o setup cria a estrutura base, instala plugins e configura a IA."
+  info "Rode: bash setup.sh"
+  exit 0
+fi
+
+# ──── Estrutura base do vault ───────────────────────────────────────────────────
+mkdir -p \
+  "$VAULT_DIR/00 - INBOX" \
+  "$VAULT_DIR/Memória" \
+  "$VAULT_DIR/07 - HANDOVERS/Tarefas" \
+  "$VAULT_DIR/07 - HANDOVERS/Arquivo" \
+  "$VAULT_DIR/07 - HANDOVERS/Tarefas/Arquivo"
+
+touch \
+  "$VAULT_DIR/00 - INBOX/.gitkeep" \
+  "$VAULT_DIR/07 - HANDOVERS/Tarefas/.gitkeep" \
+  "$VAULT_DIR/07 - HANDOVERS/Arquivo/.gitkeep" \
+  "$VAULT_DIR/07 - HANDOVERS/Tarefas/Arquivo/.gitkeep"
+
+if [ ! -f "$VAULT_DIR/Memória/INDEX.md" ]; then
+  cat > "$VAULT_DIR/Memória/INDEX.md" <<'EOF'
+# Índice de Memória
+
+> Memória semântica compartilhada entre IAs.
+> Uma linha por fato durável. Protocolo: ver `../AGENTS.md` → seção **Memória viva**.
+
+## Fatos
+
+_Nenhum fato registrado ainda. Rode `/init_newbrain` para criar o perfil inicial._
+EOF
+fi
+
+ok "Estrutura base criada: INBOX, Memória e HANDOVERS"
 echo ""
 
 # ──── Verificar dependências básicas ────────────────────────────────────────────
@@ -96,8 +155,8 @@ if $setup_claude; then
     info "Instale em: https://claude.ai/code"
     info "Ou: npm install -g @anthropic-ai/claude-code"
   fi
-  ok "Skills em: $VAULT_DIR/.claude/skills/"
-  info "/init_newbrain  /handover_chat  /handon_chat  /vault_scan"
+  ok "Commands em: $VAULT_DIR/.claude/commands/"
+  info "/init_newbrain  /handover_chat  /handon_chat  /vault_scan  /vault_gc"
   echo ""
 fi
 
@@ -112,7 +171,7 @@ if $setup_gemini; then
     info "Ou: npm install -g @google/generative-ai-cli"
   fi
   ok "GEMINI.md configurado em: $VAULT_DIR/GEMINI.md"
-  info "Gemini CLI não tem slash commands — use as skills como contexto manual"
+  info "Gemini CLI não tem slash commands — use os arquivos em .claude/commands/ como contexto manual"
   echo ""
 fi
 
@@ -144,7 +203,7 @@ if $setup_opencode; then
 # model = "claude-sonnet-4-6"
 
 [instructions]
-file = "../CLAUDE.md"
+file = "../AGENTS.md"
 EOF
     ok ".opencode/config.toml criado"
   fi
@@ -170,9 +229,9 @@ EOF
 fi
 
 # ──── Obsidian ───────────────────────────────────────────────────────────────────
-echo "╔══════════════════════════════════════════╗"
-echo "║           Tudo pronto!                   ║"
-echo "╚══════════════════════════════════════════╝"
+echo ""
+echo -e "${GREEN}${BOLD}Tudo pronto.${NC}"
+echo "──────────────────────────────────────────"
 echo ""
 echo "  Vault em: $VAULT_DIR"
 echo ""
@@ -192,7 +251,7 @@ if $setup_claude; then
 elif $setup_gemini; then
   echo "  2. Abra a pasta vault/ no terminal"
   echo "     → Digite: gemini"
-  echo "     → Peça: 'Leia o arquivo .claude/skills/init_newbrain.md e siga as instruções'"
+  echo "     → Peça: 'Leia AGENTS.md e .claude/commands/init_newbrain.md, depois siga o onboarding'"
 fi
 
 echo ""
@@ -200,4 +259,5 @@ echo "  3. Use o vault!"
 echo "     → /handover_chat — salvar sessão"
 echo "     → /handon_chat   — retomar sessão"
 echo "     → /vault_scan    — conectar notas"
+echo "     → /vault_gc      — manutenção semanal"
 echo ""
