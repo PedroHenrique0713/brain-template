@@ -194,20 +194,30 @@ Os procedimentos ficam em `.claude/commands/`. Eles são Markdown puro, então f
 
 ## Atualizar
 
-Já tem um vault rodando e quer puxar as novidades do template (commands novos, correções) **sem perder seus dados**? Rode, de dentro da pasta do seu vault:
+Já tem um vault rodando e quer puxar as novidades do template (commands novos, correções) **sem perder seus dados**? Sempre rode **de dentro da pasta do seu vault**.
+
+**Linux / Mac (ou Windows com Git Bash):**
 
 ```bash
 curl -sL https://raw.githubusercontent.com/PedroHenrique0713/brain-template/main/update.sh | bash
 ```
-
-O `update.sh` mostra o banner e as **release notes** de tudo que mudou entre a sua versão e a mais recente, depois sincroniza **só o framework**: `.claude/commands/`, `setup.sh`, `update.sh` e `ascii-art.txt`. Ele **nunca toca** em `AGENTS.md`, `CLAUDE.md`/`GEMINI.md`, `Memória/`, projetos, handovers ou INBOX.
 
 ```bash
 curl -sL .../update.sh | bash -s -- --dry-run   # só mostra o que mudaria
 curl -sL .../update.sh | bash -s -- --prune     # também remove commands obsoletos
 ```
 
-A versão sincronizada fica registrada em `.claude/.brain-version`. As notas de cada versão estão no [CHANGELOG.md](CHANGELOG.md).
+**Windows (sem Git Bash, mas com Node.js):** use a versão em Node — funciona no PowerShell/terminal do VS Code. Baixe e rode:
+
+```powershell
+irm https://raw.githubusercontent.com/PedroHenrique0713/brain-template/main/update.mjs -OutFile update.mjs ; node update.mjs
+```
+
+Depois é só `node update.mjs` (ou `node update.mjs --dry-run` / `--prune`). O `update.mjs` é cross-platform — roda igual em Windows, Mac e Linux, basta ter Node 18+.
+
+> PowerShell/CMD puros **não** rodam o `update.sh` (não têm `bash`). Use o `update.mjs`, ou abra o **Git Bash**.
+
+Os dois atualizadores fazem a mesma coisa: mostram banner + **release notes**, e sincronizam **só o framework** (`.claude/commands/`). **Nunca tocam** em `AGENTS.md`, `CLAUDE.md`/`GEMINI.md`, `Memória/`, projetos, handovers ou INBOX. A versão sincronizada fica em `.claude/.brain-version`; as notas estão no [CHANGELOG.md](CHANGELOG.md).
 
 > Migrar a **estrutura** da v1 (skills → commands, conteúdo do `CLAUDE.md` → `AGENTS.md`) é outra coisa: isso é feito pelo onboarding `/update_brain`, que pede confirmação antes de mexer no seu perfil.
 
