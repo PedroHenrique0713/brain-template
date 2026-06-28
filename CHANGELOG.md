@@ -3,6 +3,16 @@
 Notas de versão do template. O `update.sh` mostra automaticamente tudo o que mudou
 entre a sua versão e a mais recente. Formato baseado em [Keep a Changelog](https://keepachangelog.com/pt-BR/).
 
+## [2.2.0] - 2026-06-28
+
+Atualizar agora funciona no Windows "pelado" também.
+
+### Adicionado
+- **`update.mjs`** — versão do atualizador em Node.js, cross-platform (Windows/Mac/Linux), zero dependências. Para quem não tem Git Bash/WSL mas tem Node. Mesmas funções do `update.sh` (banner, release notes, `--dry-run`, `--prune`, marcador de versão).
+
+### Notas
+- Windows: rode `update.mjs` com Node, ou `update.sh` no Git Bash. PowerShell/CMD puros não rodam o `.sh`.
+
 ## [2.1.0] - 2026-06-28
 
 Atualização sem dor: agora dá pra puxar novidades do template num vault que já existe.
