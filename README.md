@@ -186,10 +186,30 @@ Os procedimentos ficam em `.claude/commands/`. Eles são Markdown puro, então f
 | Command | Uso |
 |---|---|
 | `/init_newbrain` | Onboarding e personalização inicial |
+| `/update_brain` | Migra a estrutura de um vault antigo (v1) para a atual, sem perder dados |
 | `/handover_chat` | Salvar estado da sessão |
 | `/handon_chat` | Retomar sessão ou tarefa |
 | `/vault_scan` | Criar referências cruzadas entre notas |
 | `/vault_gc` | Manutenção: arquivar handovers, validar memória e triagem do INBOX |
+
+## Atualizar
+
+Já tem um vault rodando e quer puxar as novidades do template (commands novos, correções) **sem perder seus dados**? Rode, de dentro da pasta do seu vault:
+
+```bash
+curl -sL https://raw.githubusercontent.com/PedroHenrique0713/brain-template/main/update.sh | bash
+```
+
+O `update.sh` mostra o banner e as **release notes** de tudo que mudou entre a sua versão e a mais recente, depois sincroniza **só o framework**: `.claude/commands/`, `setup.sh`, `update.sh` e `ascii-art.txt`. Ele **nunca toca** em `AGENTS.md`, `CLAUDE.md`/`GEMINI.md`, `Memória/`, projetos, handovers ou INBOX.
+
+```bash
+curl -sL .../update.sh | bash -s -- --dry-run   # só mostra o que mudaria
+curl -sL .../update.sh | bash -s -- --prune     # também remove commands obsoletos
+```
+
+A versão sincronizada fica registrada em `.claude/.brain-version`. As notas de cada versão estão no [CHANGELOG.md](CHANGELOG.md).
+
+> Migrar a **estrutura** da v1 (skills → commands, conteúdo do `CLAUDE.md` → `AGENTS.md`) é outra coisa: isso é feito pelo onboarding `/update_brain`, que pede confirmação antes de mexer no seu perfil.
 
 ## Estrutura
 
