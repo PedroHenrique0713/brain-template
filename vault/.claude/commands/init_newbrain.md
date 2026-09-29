@@ -81,13 +81,17 @@ Depois dos 5 blocos, faça:
    - estilo de colaboração;
    - ferramentas;
    - protocolo de memória e handoff preservado.
-2. Garanta `CLAUDE.md` e `GEMINI.md` finos:
+2. Garanta `CLAUDE.md` e `GEMINI.md` finos. O `CLAUDE.md` **importa** os arquivos canônicos (sem `@`, o Claude Code só carrega o próprio `CLAUDE.md` e o resto depende do modelo lembrar de ler):
    ```markdown
    # CLAUDE.md
 
-   Leia primeiro: `AGENTS.md`.
+   > Ponte fina para o Claude Code. O contexto canônico é o `AGENTS.md`; não duplique conteúdo aqui.
 
-   `AGENTS.md` é o arquivo canônico de contexto deste vault.
+   @AGENTS.md
+
+   @GUARDRAILS.md
+
+   @Memória/INDEX.md
    ```
 3. Crie/atualize `Memória/user-profile.md`:
    ```markdown

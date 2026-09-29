@@ -1,5 +1,10 @@
 # CLAUDE.md
 
-Leia primeiro: `AGENTS.md`.
+> Ponte fina para o Claude Code. O contexto canônico é o `AGENTS.md`; não duplique conteúdo aqui.
+> As linhas `@` abaixo são imports: o Claude Code carrega esses arquivos no início de toda sessão.
 
-`AGENTS.md` é o arquivo canônico de contexto deste vault. Este arquivo existe só para ferramentas que carregam `CLAUDE.md` automaticamente.
+@AGENTS.md
+
+@GUARDRAILS.md
+
+@Memória/INDEX.md

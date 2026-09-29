@@ -11,7 +11,23 @@
       "Bash(date:*)",
       "Bash(mkdir:*)",
       "Bash(touch:*)",
-      "Bash(mv:*)"
+      "Bash(mv:*)",
+      "Bash(python3 \"03 - RESOURCES/Scripts/nova-tarefa.py\":*)",
+      "Bash(python3 \"03 - RESOURCES/Scripts/gerar-ativas.py\":*)"
+    ]
+  },
+  "hooks": {
+    "SessionStart": [
+      {
+        "matcher": "compact",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "\"$CLAUDE_PROJECT_DIR\"/.claude/hooks/pos-compactacao.sh",
+            "timeout": 10
+          }
+        ]
+      }
     ]
   }
 }

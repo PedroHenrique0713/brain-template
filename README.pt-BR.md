@@ -75,9 +75,10 @@ Estes arquivos são fonte de verdade:
 | Arquivo/pasta | Papel |
 |---|---|
 | `AGENTS.md` | Contexto principal do vault para qualquer IA |
+| `GUARDRAILS.md` | Como trabalhar: evidência antes de afirmar, plano antes de código, verificação |
 | `Memória/INDEX.md` | Índice dos fatos duráveis |
 | `Memória/*.md` | Memória semântica, um fato por arquivo |
-| `07 - HANDOVERS/` | Estado episódico de sessões e tarefas |
+| `07 - HANDOVERS/` | Estado episódico de sessões e tarefas (`ATIVAS.md` é o painel gerado das tarefas vivas) |
 | `01 - PROJECTS/`, `02 - AREAS/`, `06 - KNOWLEDGE/` | Referência de projetos, áreas e conhecimento |
 
 ### Não canônico
@@ -86,7 +87,7 @@ Estes arquivos não devem duplicar contexto:
 
 | Arquivo/pasta | Papel |
 |---|---|
-| `CLAUDE.md` | Só aponta para `AGENTS.md` |
+| `CLAUDE.md` | Importa `AGENTS.md`, `GUARDRAILS.md` e o INDEX com `@` |
 | `GEMINI.md` | Só aponta para `AGENTS.md` |
 | `.claude/commands/` | Procedimentos reutilizáveis, não memória |
 | `.opencode/config.toml` | Configuração de ferramenta |
@@ -148,19 +149,13 @@ Depois adicione uma linha em `Memória/INDEX.md`:
 
 Handover é memória episódica: onde uma sessão parou.
 
-Use `/handover_chat` quando terminar uma sessão, trocar de IA ou pausar uma tarefa. Ele salva:
+Cada tarefa são dois arquivos: o **estado** `T0XX - nome.md` (curto, reescrito a cada handover: objetivo, estado exato, próximo passo, feito, decisões técnicas, armadilhas) e o **log** `T0XX - nome.log.md` (só acréscimo, uma entrada por sessão). O `07 - HANDOVERS/ATIVAS.md` é gerado com toda tarefa viva, o status e o próximo passo, e marca as paradas há mais de 21 dias.
 
-- objetivo atual;
-- estado exato;
-- o que já foi feito;
-- próximos passos;
-- decisões técnicas;
-- armadilhas de contexto.
+Use `/handover_chat` ao fechar uma frente, terminar a sessão ou trocar de IA. Um hook `SessionStart` lembra do checkpoint depois de cada compactação de contexto.
 
 Use `/handon_chat` para retomar:
 
-- listar handovers ativos;
-- abrir o mais recente;
+- listar as tarefas vivas pelo `ATIVAS.md`;
 - abrir uma tarefa específica (`T001`, `T002`, etc.).
 
 ```mermaid
@@ -170,7 +165,7 @@ sequenceDiagram
   participant B as IA 2
 
   A->>V: /handover_chat
-  V->>V: salva 07 - HANDOVERS/Tarefas/T0XX.md
+  V->>V: reescreve T0XX.md (estado) e acrescenta no T0XX.log.md
   B->>V: /handon_chat T0XX
   V-->>B: objetivo, estado, feito, próximos passos
   B->>V: continua e atualiza handover

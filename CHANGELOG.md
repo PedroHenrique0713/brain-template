@@ -3,6 +3,28 @@
 Notas de versão do template. O `update.sh` mostra automaticamente tudo o que mudou
 entre a sua versão e a mais recente. Formato baseado em [Keep a Changelog](https://keepachangelog.com/pt-BR/).
 
+## [3.0.0] - 2026-09-29
+
+Handover que aguenta meses de uso, com várias sessões e várias IAs ao mesmo tempo. Tudo o que entra aqui saiu de problema medido num vault real, com 190 sessões num mês.
+
+### Mudou
+- **Tarefa = dois arquivos:** o estado `T0XX - nome.md` (curto, reescrito a cada `/handover_chat`) e o log `T0XX - nome.log.md` (só acréscimo). Estado e log juntos viravam diários de centenas de KB, com "próximo passo" velho esquecido no meio.
+- **`status:` com 5 valores:** `ativa`, `aguardando` (com `bloqueio:`), `pausada`, `concluida`, `cancelada`. Eram 18 grafias diferentes e o `/vault_gc` só reconhecia algumas.
+- **`CLAUDE.md` importa** `AGENTS.md`, `GUARDRAILS.md` e `Memória/INDEX.md` com `@`. Antes ele só dizia "leia o AGENTS.md", e o carregamento dependia do modelo lembrar.
+- `/handover_chat`, `/handon_chat` e `/vault_gc` reescritos para o esquema novo, com a mesma estrutura de seções no estado, no snapshot e no `HANDOFF.md`.
+
+### Adicionado
+- **`GUARDRAILS.md`** — protocolo de trabalho para qualquer IA: reconhecimento antes de opinião, plano, verificação com evidência, economia de contexto, autonomia calibrada.
+- **`07 - HANDOVERS/ATIVAS.md`**, gerado por `03 - RESOURCES/Scripts/gerar-ativas.py`: toda tarefa viva com status, última atualização e próximo passo; ⚠️ marca a viva parada há mais de 21 dias.
+- **`03 - RESOURCES/Scripts/nova-tarefa.py`**: cria estado + log com o próximo ID sob trava (sessões paralelas numerando à mão repetiam número).
+- **Hook `SessionStart` "compact"** (`.claude/hooks/pos-compactacao.sh`, registrado em `.claude/settings.json`): depois de cada compactação, pede o checkpoint da tarefa e aponta a transcrição completa. Handover escrito depois de uma compactação saía do resumo, que é raso.
+- **`Memória/STAGING.md`** e o protocolo de memória completo no `AGENTS.md`: teto de ~320 caracteres por linha do INDEX, gancho buscável, invalidação explícita, e fatos de projeto ou lições técnicas podendo sair do INDEX para uma skill que carrega pelo tema.
+- **`/vault_gc`** lista as tarefas paradas para você decidir, e tritura o STAGING.
+
+### Como atualizar um vault existente
+- `update.sh` / `update.mjs` agora sincronizam também `.claude/hooks/` e `03 - RESOURCES/Scripts/`, e criam `GUARDRAILS.md`, `Memória/STAGING.md` e os templates de tarefa **só se faltarem** (nunca sobrescrevem o que você editou).
+- À mão: troque o `CLAUDE.md` pelo do template (imports com `@`) e acrescente ao seu `.claude/settings.json` o bloco `hooks.SessionStart` do template. As tarefas antigas migram sozinhas: o `/handover_chat` separa o log na primeira vez que tocar cada uma.
+
 ## [2.2.0] - 2026-06-28
 
 Atualizar agora funciona no Windows "pelado" também.

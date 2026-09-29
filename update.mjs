@@ -8,7 +8,7 @@
 //
 // Sincroniza SÓ o framework (.claude/commands/) e NUNCA toca em
 // AGENTS.md, CLAUDE.md, GEMINI.md, Memória/, projetos, handovers ou INBOX.
-import { readFile, writeFile, mkdir, readdir, rm } from "node:fs/promises";
+import { readFile, writeFile, mkdir, readdir, rm, chmod } from "node:fs/promises";
 import { existsSync } from "node:fs";
 import { join, dirname } from "node:path";
 
@@ -109,8 +109,19 @@ async function addDir(apiPath, dstBase) {
     else if (it.type === "dir") await addDir(`${apiPath}/${it.name}`, join(dstBase, it.name));
   }
 }
+// Camada de sistema além dos commands (3.0.0): hooks e scripts sempre sincronizados;
+// guardrails, templates e STAGING só entram se faltarem (o usuário os edita).
+async function addFileIfMissing(apiPath, dst) {
+  if (existsSync(dst)) return;
+  const it = await getJson(`${API}/${encodeURI(apiPath)}?ref=${BRANCH}`);
+  if (it && it.download_url) pairs.push({ url: it.download_url, dst });
+}
 try {
   await addDir("vault/.claude/commands", join(VAULT, ".claude", "commands"));
+  await addDir("vault/.claude/hooks", join(VAULT, ".claude", "hooks"));
+  await addDir(encodeURI("vault/03 - RESOURCES/Scripts"), join(VAULT, "03 - RESOURCES", "Scripts"));
+  for (const rel of ["GUARDRAILS.md", "Memória/STAGING.md", "03 - RESOURCES/Templates/template-tarefa.md", "03 - RESOURCES/Templates/HANDOFF.template.md"])
+    await addFileIfMissing(`vault/${rel}`, join(VAULT, ...rel.split("/")));
 } catch (e) {
   fail("Falha ao consultar o GitHub: " + e.message);
   info("Pode ser limite de requisições anônimas. Tente de novo em alguns minutos.");
@@ -173,6 +184,7 @@ if (DRY) {
 for (const w of toWrite) {
   await mkdir(dirname(w.dst), { recursive: true });
   await writeFile(w.dst, w.text);
+  if (/\.(sh|py)$/.test(w.dst)) await chmod(w.dst, 0o755).catch(() => {});
 }
 ok(`Framework sincronizado (${added} novos, ${changed} atualizados).`);
 

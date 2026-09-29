@@ -58,3 +58,6 @@ vault/.vscode/settings.json
 Thumbs.db
 *.swp
 *.swo
+
+# trava do nova-tarefa.py (ID de tarefa sob flock)
+.nova-tarefa.lock

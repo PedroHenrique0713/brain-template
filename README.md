@@ -79,12 +79,13 @@ flowchart TD
   Handover --> Tasks["07 - HANDOVERS/Tarefas/T0XX"]
 ```
 
-**Canonical** (source of truth): `AGENTS.md`, `Memória/INDEX.md` + `Memória/*.md`,
+**Canonical** (source of truth): `AGENTS.md`, `GUARDRAILS.md` (how any AI should work: evidence
+before claims, plan before code, verification), `Memória/INDEX.md` + `Memória/*.md`,
 `07 - HANDOVERS/`, and the reference folders (`01 - PROJECTS/`, `02 - AREAS/`,
 `06 - KNOWLEDGE/`).
 
 **Non-canonical** (never duplicate context there): `CLAUDE.md` and `GEMINI.md`
-(thin pointers that exist only because tools auto-load those filenames) and
+(thin bridges: `CLAUDE.md` imports `AGENTS.md`, `GUARDRAILS.md` and the INDEX with `@`) and
 `.claude/commands/` (reusable procedures, not memory).
 
 ## Two kinds of continuity
@@ -118,9 +119,14 @@ The fact itself.
 …plus one line in `Memória/INDEX.md`. Don't store momentary state, "currently…",
 or anything git already records.
 
-**`07 - HANDOVERS/` answers "where I stopped"** — run `/handover_chat` when
-ending a session, switching AIs or pausing a task (saves goal, exact state,
-done, next steps, decisions, traps). Run `/handon_chat` to resume:
+**`07 - HANDOVERS/` answers "where I stopped"** — a task is two files: the
+**state** `T0XX - name.md` (short, rewritten on every handover: goal, exact state,
+next step, done, decisions, traps) and the **log** `T0XX - name.log.md` (append-only,
+one entry per session). `07 - HANDOVERS/ATIVAS.md` is generated with every live
+task, its status and next step, flagging the ones idle for 21+ days. Run
+`/handover_chat` when closing a front, ending a session or switching AIs (a
+`SessionStart` hook reminds you to checkpoint after every context compaction);
+run `/handon_chat` to resume:
 
 ```mermaid
 sequenceDiagram
@@ -129,7 +135,7 @@ sequenceDiagram
   participant B as AI 2
 
   A->>V: /handover_chat
-  V->>V: saves 07 - HANDOVERS/Tarefas/T0XX.md
+  V->>V: rewrites T0XX.md (state), appends to T0XX.log.md
   B->>V: /handon_chat T0XX
   V-->>B: goal, state, done, next steps
   B->>V: continues and updates the handover

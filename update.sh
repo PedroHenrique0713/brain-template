@@ -6,7 +6,8 @@
 #   curl -sL .../update.sh | bash -s -- --dry-run     # só mostra o que mudaria
 #   curl -sL .../update.sh | bash -s -- --prune       # também remove commands obsoletos
 #
-# Sincroniza SÓ: .claude/commands/ , setup.sh , update.sh , ascii-art.txt
+# Sincroniza SÓ: .claude/commands/ , .claude/hooks/ , 03 - RESOURCES/Scripts/ , setup.sh , update.sh , ascii-art.txt
+# Cria se faltar (nunca sobrescreve): GUARDRAILS.md , Memória/STAGING.md , templates de tarefa e HANDOFF
 # NUNCA toca em: AGENTS.md, CLAUDE.md, GEMINI.md, Memória/, projetos, handovers, INBOX.
 set -euo pipefail
 
@@ -108,6 +109,18 @@ while IFS= read -r f; do
   PAIRS+=("$f|$VAULT/.claude/commands/$rel")
 done < <(find "$SRCV/.claude/commands" -type f)
 
+# Camada de sistema além dos commands (3.0.0): scripts de tarefa e hook de compactação,
+# sempre sincronizados; guardrails, templates e STAGING só entram se faltarem (o usuário os edita).
+for rel in ".claude/hooks" "03 - RESOURCES/Scripts"; do
+  [ -d "$SRCV/$rel" ] || continue
+  while IFS= read -r f; do
+    PAIRS+=("$f|$VAULT/${f#"$SRCV/"}")
+  done < <(find "$SRCV/$rel" -type f)
+done
+for rel in GUARDRAILS.md "Memória/STAGING.md" "03 - RESOURCES/Templates/template-tarefa.md" "03 - RESOURCES/Templates/HANDOFF.template.md"; do
+  [ -f "$SRCV/$rel" ] && [ ! -f "$VAULT/$rel" ] && PAIRS+=("$SRCV/$rel|$VAULT/$rel")
+done
+
 # Arquivos de framework só fazem sentido num clone (layout com vault/)
 if [ "$VAULT" = "vault" ]; then
   for root_f in setup.sh update.sh ascii-art.txt VERSION CHANGELOG.md; do
@@ -155,6 +168,7 @@ for pair in "${PAIRS[@]}"; do
   mkdir -p "$(dirname "$dst")"
   cp "$src" "$dst"
 done
+chmod +x "$VAULT"/.claude/hooks/*.sh "$VAULT/03 - RESOURCES/Scripts/"*.py 2>/dev/null || true
 ok "Framework sincronizado ($((added)) novos, $((changed)) atualizados)."
 
 if [ "${#STALE[@]}" -gt 0 ] && [ -n "${STALE[0]:-}" ]; then
