@@ -58,7 +58,7 @@ def main() -> None:
     for f in sorted(DIR.glob("T*.md")):
         if f.name.endswith(".log.md"):
             continue
-        texto = f.read_text(errors="ignore")
+        texto = f.read_text(encoding="utf-8", errors="replace")
         fm = frontmatter(texto)
         status = fm.get("status", "?").lower()
         status = LEGADO.get(status, status)
@@ -81,7 +81,7 @@ def main() -> None:
     linhas.sort(key=lambda x: x[1], reverse=True)
     linhas.sort(key=lambda x: (x[0], x[5]))
     recentes = sorted((p for p in HO.glob("20*.md")), reverse=True)[:8]
-    with open(OUT, "w") as w:
+    with open(OUT, "w", encoding="utf-8") as w:
         w.write("<!-- GERADO por 03 - RESOURCES/Scripts/gerar-ativas.py. Não editar: mude a tarefa e rode o script. -->\n")
         w.write(f"# Tarefas vivas ({hoje.isoformat()})\n\n")
         w.write(f"> Ponto de partida para retomar trabalho ou dividir frentes entre sessões. ⚠️ = viva, mas sem toque há mais de {PARADA_DIAS} dias: não entra no D do dia, e o `/vault_gc` pergunta se pausa ou encerra.\n\n")

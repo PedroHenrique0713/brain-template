@@ -40,7 +40,7 @@ def main() -> None:
     # o nome do log ("T000 - <título>.log.md") tem de caber nos 255 bytes do sistema de arquivos
     while len(f"T0000 - {titulo}.log.md".encode()) > 250:
         titulo = titulo[:-1].rstrip()
-    with open(DIR / ".nova-tarefa.lock", "w") as lock:
+    with open(DIR / ".nova-tarefa.lock", "w", encoding="utf-8") as lock:
         fcntl.flock(lock, fcntl.LOCK_EX)
         nums = [int(m.group(1)) for p in (DIR, DIR / "Arquivo") for f in p.glob("T*.md")
                 if (m := re.match(r"T0*(\d+)\b", f.name))]
@@ -48,14 +48,14 @@ def main() -> None:
         hoje = date.today().isoformat()
         estado = DIR / f"{tid} - {titulo}.md"
         log = DIR / f"{tid} - {titulo}.log.md"
-        corpo = (TPL.read_text()
+        corpo = (TPL.read_text(encoding="utf-8")
                  .replace("titulo: {{TITULO}}", f"titulo: {json.dumps(titulo, ensure_ascii=False)}")
                  .replace("projeto: {{PROJETO}}", f"projeto: {json.dumps(projeto, ensure_ascii=False)}")
                  .replace("{{ID}}", tid).replace("{{TITULO}}", titulo).replace("{{DATA}}", hoje))
-        with open(estado, "x") as f:
+        with open(estado, "x", encoding="utf-8") as f:
             f.write(corpo)
         try:
-            with open(log, "x") as f:
+            with open(log, "x", encoding="utf-8") as f:
                 f.write(LOG_TPL.format(id=tid, titulo=titulo))
         except OSError:
             estado.unlink()  # estado sem log é tarefa pela metade

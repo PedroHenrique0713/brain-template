@@ -3,6 +3,13 @@
 Notas de versão do template. O `update.sh` mostra automaticamente tudo o que mudou
 entre a sua versão e a mais recente. Formato baseado em [Keep a Changelog](https://keepachangelog.com/pt-BR/).
 
+## [3.0.1] - 2026-10-10
+
+Os scripts de tarefa funcionam no Windows.
+
+### Corrigido
+- `nova-tarefa.py` e `gerar-ativas.py` liam e gravavam sem `encoding`, e no Windows o Python usa cp1252: o `gerar-ativas.py` quebrava no ⚠️ do cabeçalho (`UnicodeEncodeError: 'charmap' codec`) e o `nova-tarefa.py` gravava a tarefa em cp1252, com os acentos inválidos para o Obsidian. Agora tudo é UTF-8. Achado num vault real em Windows 11.
+
 ## [3.0.0] - 2026-09-29
 
 Handover que aguenta meses de uso, com várias sessões e várias IAs ao mesmo tempo. Tudo o que entra aqui saiu de problema medido num vault real, com 190 sessões num mês.
